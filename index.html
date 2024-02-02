@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chulpan Chatroom v1.0</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 20px;
+        }
+
+        #chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #message-input {
+            width: 70%;
+            padding: 5px;
+        }
+
+        #send-btn {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #info-section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container"></div>
+    <div>
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+
+    <div id="info-section">
+        <p>Chulpan Chatroom v1.0</p>
+        <p>First planned on September 17, 1997</p>
+    </div>
+
+    <script>
+        let chatHistory = [];
+        let currentIndex = 0;
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (message !== '') {
+                chatHistory.push(message);
+                currentIndex = chatHistory.length;
+                displayChat();
+                messageInput.value = '';
+            }
+        }
+
+        function displayChat() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.innerHTML = '';
+
+            const startIndex = Math.max(0, currentIndex - 20);
+            const endIndex = Math.min(currentIndex, chatHistory.length);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = chatHistory[i];
+                chatContainer.appendChild(messageDiv);
+            }
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowLeft') {
+                currentIndex = Math.max(0, currentIndex - 20);
+                displayChat();
+            } else if (event.key === 'ArrowRight') {
+                currentIndex = Math.min(chatHistory.length, currentIndex + 20);
+                displayChat();
+            }
+        });
+    </script>
+</body>
+</html>
