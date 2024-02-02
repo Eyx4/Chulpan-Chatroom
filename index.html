@@ -51,7 +51,7 @@
 
     <div id="info-section">
         <p>Chulpan Chatroom v1.0</p>
-        <p>First planned on September 17, 1997</p>
+        <p id="username-display"></p>
     </div>
 
     <div id="sign-in-section">
@@ -62,12 +62,14 @@
         let chatHistory = [];
         let currentIndex = 0;
         let signedIn = false;
+        let username = '';
 
         function signIn() {
-            const username = prompt("Please enter your username:");
+            username = prompt("Please enter your username:");
             if (username) {
                 alert(`Welcome, ${username}! You are now signed in.`);
                 enableChat();
+                displayUsername();
             } else {
                 alert('Sign-in canceled. Please sign in to participate in the chat.');
             }
@@ -90,7 +92,8 @@
             const message = messageInput.value.trim();
 
             if (message !== '') {
-                chatHistory.push(message);
+                const formattedMessage = `${username}: ${message}`;
+                chatHistory.push(formattedMessage);
                 currentIndex = chatHistory.length;
                 displayChat();
                 messageInput.value = '';
@@ -113,6 +116,11 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        function displayUsername() {
+            const usernameDisplay = document.getElementById('username-display');
+            usernameDisplay.textContent = `Signed in as: ${username}`;
+        }
+
         document.addEventListener('keydown', function (event) {
             if (!signedIn) {
                 alert('You need to sign in before using the chat.');
@@ -123,6 +131,27 @@
                 currentIndex = Math.max(0, currentIndex - 20);
                 displayChat();
             } else if (event.key === 'ArrowRight') {
+                currentIndex = Math.min(chatHistory.length, currentIndex + 20);
+                displayChat();
+            }
+        });
+
+        // Touch events for mobile swipes
+        let touchStartX = 0;
+        document.addEventListener('touchstart', function (event) {
+            touchStartX = event.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', function (event) {
+            const touchEndX = event.changedTouches[0].clientX;
+            const swipeDistance = touchEndX - touchStartX;
+
+            if (swipeDistance > 50) {
+                // Swipe right
+                currentIndex = Math.max(0, currentIndex - 20);
+                displayChat();
+            } else if (swipeDistance < -50) {
+                // Swipe left
                 currentIndex = Math.min(chatHistory.length, currentIndex + 20);
                 displayChat();
             }
