@@ -65,20 +65,31 @@
         let username = '';
 
         // Load chat history from local storage
-        if (localStorage.getItem('chatHistory')) {
-            chatHistory = JSON.parse(localStorage.getItem('chatHistory'));
-            currentIndex = chatHistory.length;
-            displayChat();
+        try {
+            const storedHistory = localStorage.getItem('chatHistory');
+            if (storedHistory) {
+                chatHistory = JSON.parse(storedHistory);
+                currentIndex = chatHistory.length;
+                displayChat();
+            }
+        } catch (error) {
+            console.error('Error loading chat history from local storage:', error);
         }
 
         // Load signed-in status and username from local storage
-        if (localStorage.getItem('signedIn')) {
-            signedIn = JSON.parse(localStorage.getItem('signedIn'));
-        }
+        try {
+            const storedSignedIn = localStorage.getItem('signedIn');
+            if (storedSignedIn) {
+                signedIn = JSON.parse(storedSignedIn);
+            }
 
-        if (localStorage.getItem('username')) {
-            username = localStorage.getItem('username');
-            displayUsername();
+            const storedUsername = localStorage.getItem('username');
+            if (storedUsername) {
+                username = storedUsername;
+                displayUsername();
+            }
+        } catch (error) {
+            console.error('Error loading signed-in status and username from local storage:', error);
         }
 
         function signIn() {
@@ -141,9 +152,13 @@
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-            localStorage.setItem('signedIn', JSON.stringify(signedIn));
-            localStorage.setItem('username', username);
+            try {
+                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                localStorage.setItem('signedIn', JSON.stringify(signedIn));
+                localStorage.setItem('username', username);
+            } catch (error) {
+                console.error('Error saving to local storage:', error);
+            }
         }
 
         document.addEventListener('keydown', function (event) {
