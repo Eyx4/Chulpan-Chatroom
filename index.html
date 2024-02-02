@@ -36,9 +36,14 @@
             margin-top: 20px;
         }
 
-        #sign-in-btn {
+        #sign-in-btn,
+        #sign-out-btn {
             padding: 5px 10px;
             cursor: pointer;
+        }
+
+        #sign-out-btn {
+            display: none;
         }
     </style>
 </head>
@@ -56,6 +61,7 @@
 
     <div id="sign-in-section">
         <button id="sign-in-btn" onclick="signIn()">Sign In</button>
+        <button id="sign-out-btn" onclick="signOut()">Sign Out</button>
     </div>
 
     <script>
@@ -97,23 +103,57 @@
             enableChat();
         }
 
+        function isUsernameTaken(newUsername) {
+            // Check if the username is already in use
+            return chatHistory.some(message => {
+                const existingUsername = message.split(':')[0].trim();
+                return existingUsername.toLowerCase() === newUsername.toLowerCase();
+            });
+        }
+
         function signIn() {
-            username = prompt("Please enter your username:");
-            if (username) {
-                alert(`Welcome, ${username}! You are now signed in.`);
-                enableChat();
-                displayUsername();
-                saveToLocalStorage();
+            const newUsername = prompt("Please enter your username:");
+
+            if (newUsername) {
+                // Check if the username is already taken
+                if (isUsernameTaken(newUsername)) {
+                    alert('Username is already taken. Please choose a different username.');
+                } else {
+                    // If not taken, proceed with signing in
+                    username = newUsername;
+                    alert(`Welcome, ${username}! You are now signed in.`);
+                    enableChat();
+                    displayUsername();
+                    saveToLocalStorage();
+                }
             } else {
                 alert('Sign-in canceled. Please sign in to participate in the chat.');
+            }
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                // Reset variables
+                signedIn = false;
+                username = '';
+                chatHistory = [];
+                currentIndex = 0;
+
+                // Clear local storage
+                localStorage.removeItem('signedIn');
+                localStorage.removeItem('username');
+                localStorage.removeItem('chatHistory');
+
+                // Reload the page
+                location.reload();
             }
         }
 
         function enableChat() {
             document.getElementById('message-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
-            document.getElementById('sign-in-btn').disabled = true;
-            signedIn = true;
+            document.getElementById('sign-in-btn').style.display = 'none';
+            document.getElementById('sign-out-btn').style.display = 'inline-block';
         }
 
         function sendMessage() {
