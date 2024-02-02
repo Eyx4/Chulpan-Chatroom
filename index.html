@@ -92,6 +92,11 @@
             console.error('Error loading signed-in status and username from local storage:', error);
         }
 
+        // Check if user was signed in before refresh
+        if (signedIn) {
+            enableChat();
+        }
+
         function signIn() {
             username = prompt("Please enter your username:");
             if (username) {
