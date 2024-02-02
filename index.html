@@ -1,244 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chulpan Chatroom v1.0</title>
+    <title>Chulpan Chatroom</title>
     <style>
-        body {
-            font-family: 'Times New Roman', serif;
-            margin: 20px;
+        #chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-
-        #chat-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 20px;
+        #chat-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
         }
-
-        #message-input {
-            width: 70%;
+        #chat-form input[type="text"] {
+            width: 300px;
+            height: 30px;
+            margin-right: 10px;
             padding: 5px;
+            border-radius: 5px;
+            border: none;
         }
-
-        #send-btn {
-            padding: 5px 10px;
+        #chat-form button {
+            width: 100px;
+            height: 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
         }
-
-        #info-section {
+        #chat-messages {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             margin-top: 20px;
         }
-
-        #sign-in-section {
-            margin-top: 20px;
+        .message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f2f2f2;
+            width: 400px;
         }
-
-        #sign-in-btn,
-        #sign-out-btn {
-            padding: 5px 10px;
-            cursor: pointer;
+        .message p {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
         }
-
-        #sign-out-btn {
-            display: none;
+        .message span {
+            font-size: 12px;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
-    <div id="chat-container"></div>
-    <div>
-        <input type="text" id="message-input" placeholder="Type your message..." disabled>
-        <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
+    <div id="chat">
+        <div id="chat-messages"></div>
+        <form id="chat-form">
+            <input type="text" id="message" placeholder="Type your message here...">
+            <button type="submit" id="send">Send</button>
+        </form>
     </div>
-
-    <div id="info-section">
-        <p>Chulpan Chatroom v1.0</p>
-        <p id="username-display"></p>
-    </div>
-
-    <div id="sign-in-section">
-        <button id="sign-in-btn" onclick="signIn()">Sign In</button>
-        <button id="sign-out-btn" onclick="signOut()">Sign Out</button>
-    </div>
-
     <script>
-        let chatHistory = [];
-        let currentIndex = 0;
-        let signedIn = false;
-        let username = '';
+        let messages = [];
+        let username = null;
+        let messageInput = document.getElementById("message");
+        let sendButton = document.getElementById("send");
+        let chatMessages = document.getElementById("chat-messages");
 
-        // Load chat history from local storage
-        try {
-            const storedHistory = localStorage.getItem('chatHistory');
-            if (storedHistory) {
-                chatHistory = JSON.parse(storedHistory);
-                currentIndex = chatHistory.length;
-                displayChat();
+        function addMessage(message, username) {
+            let messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            let messageText = document.createElement("p");
+            messageText.innerText = message;
+            let messageAuthor = document.createElement("span");
+            messageAuthor.innerText = "Posted by: " + username;
+            messageDiv.appendChild(messageText);
+            messageDiv.appendChild(messageAuthor);
+            chatMessages.appendChild(messageDiv);
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            let message = messageInput.value;
+            if (username === null) {
+                username = prompt("Please enter your name:");
             }
-        } catch (error) {
-            console.error('Error loading chat history from local storage:', error);
-        }
-
-        // Load signed-in status and username from local storage
-        try {
-            const storedSignedIn = localStorage.getItem('signedIn');
-            if (storedSignedIn) {
-                signedIn = JSON.parse(storedSignedIn);
-            }
-
-            const storedUsername = localStorage.getItem('username');
-            if (storedUsername) {
-                username = storedUsername;
-                displayUsername();
-            }
-        } catch (error) {
-            console.error('Error loading signed-in status and username from local storage:', error);
-        }
-
-        // Check if user was signed in before refresh
-        if (signedIn) {
-            enableChat();
-        }
-
-        function isUsernameTaken(newUsername) {
-            // Check if the username is already in use
-            const uniqueUsernames = [...new Set(chatHistory.map(message => message.split(':')[0].trim().toLowerCase()))];
-            return uniqueUsernames.includes(newUsername.toLowerCase());
-        }
-
-        function signIn() {
-            const newUsername = prompt("Please enter your username:");
-
-            if (newUsername) {
-                // Check if the username is already taken
-                if (isUsernameTaken(newUsername)) {
-                    alert('Username is already taken. Please choose a different username.');
-                } else {
-                    // If not taken, proceed with signing in
-                    username = newUsername;
-                    alert(`Welcome, ${username}! You are now signed in.`);
-                    enableChat();
-                    displayUsername();
-                    saveToLocalStorage();
-                }
-            } else {
-                alert('Sign-in canceled. Please sign in to participate in the chat.');
+            if (message !== "") {
+                messages.push({message: message, username: username});
+                addMessage(message, username);
+                messageInput.value = "";
+                saveMessages();
             }
         }
 
-        function signOut() {
-            if (confirm('Are you sure you want to sign out?')) {
-                // Reset variables
-                signedIn = false;
-                username = '';
-                chatHistory = [];
-                currentIndex = 0;
-
-                // Clear local storage
-                localStorage.removeItem('signedIn');
-                localStorage.removeItem('username');
-                localStorage.removeItem('chatHistory');
-
-                // Reload the page
-                location.reload();
-            }
+        function saveMessages() {
+            // Send the messages to the server to be saved
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/save-messages");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify(messages));
         }
 
-        function enableChat() {
-            document.getElementById('message-input').disabled = false;
-            document.getElementById('send-btn').disabled = false;
-            document.getElementById('sign-in-btn').style.display = 'none';
-            document.getElementById('sign-out-btn').style.display = 'inline-block';
-        }
-
-        function sendMessage() {
-            if (!signedIn) {
-                alert('You need to sign in before sending messages.');
-                return;
-            }
-
-            const messageInput = document.getElementById('message-input');
-            const message = messageInput.value.trim();
-
-            if (message !== '') {
-                const formattedMessage = `${username}: ${message}`;
-                chatHistory.push(formattedMessage);
-                currentIndex = chatHistory.length;
-                displayChat();
-                saveToLocalStorage();
-                messageInput.value = '';
-            }
-        }
-
-        function displayChat() {
-            const chatContainer = document.getElementById('chat-container');
-            chatContainer.innerHTML = '';
-
-            const startIndex = Math.max(0, currentIndex - 20);
-            const endIndex = Math.min(currentIndex, chatHistory.length);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                const messageDiv = document.createElement('div');
-                messageDiv.textContent = chatHistory[i];
-                chatContainer.appendChild(messageDiv);
-            }
-
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function displayUsername() {
-            const usernameDisplay = document.getElementById('username-display');
-            usernameDisplay.textContent = `Signed in as: ${username}`;
-        }
-
-        function saveToLocalStorage() {
-            try {
-                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-                localStorage.setItem('signedIn', JSON.stringify(signedIn));
-                localStorage.setItem('username', username);
-            } catch (error) {
-                console.error('Error saving to local storage:', error);
-            }
-        }
-
-        document.addEventListener('keydown', function (event) {
-            if (!signedIn) {
-                alert('You need to sign in before using the chat.');
-                return;
-            }
-
-            if (event.key === 'ArrowLeft') {
-                currentIndex = Math.max(0, currentIndex - 20);
-                displayChat();
-            } else if (event.key === 'ArrowRight') {
-                currentIndex = Math.min(chatHistory.length, currentIndex + 20);
-                displayChat();
-            }
-        });
-
-        // Touch events for mobile swipes
-        let touchStartX = 0;
-        document.addEventListener('touchstart', function (event) {
-            touchStartX = event.touches[0].clientX;
-        });
-
-        document.addEventListener('touchend', function (event) {
-            const touchEndX = event.changedTouches[0].clientX;
-            const swipeDistance = touchEndX - touchStartX;
-
-            if (swipeDistance > 50) {
-                // Swipe right
-                currentIndex = Math.max(0, currentIndex - 20);
-                displayChat();
-            } else if (swipeDistance < -50) {
-                // Swipe left
-                currentIndex = Math.min(chatHistory.length, currentIndex + 20);
-                displayChat();
-            }
-        });
+        sendButton.addEventListener("click", sendMessage);
     </script>
 </body>
 </html>
