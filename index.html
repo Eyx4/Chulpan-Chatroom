@@ -31,13 +31,22 @@
         #info-section {
             margin-top: 20px;
         }
+
+        #sign-in-section {
+            margin-top: 20px;
+        }
+
+        #sign-in-btn {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="chat-container"></div>
     <div>
-        <input type="text" id="message-input" placeholder="Type your message...">
-        <button id="send-btn" onclick="sendMessage()">Send</button>
+        <input type="text" id="message-input" placeholder="Type your message..." disabled>
+        <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
     </div>
 
     <div id="info-section">
@@ -45,11 +54,38 @@
         <p>First planned on September 17, 1997</p>
     </div>
 
+    <div id="sign-in-section">
+        <button id="sign-in-btn" onclick="signIn()">Sign In</button>
+    </div>
+
     <script>
         let chatHistory = [];
         let currentIndex = 0;
+        let signedIn = false;
+
+        function signIn() {
+            const username = prompt("Please enter your username:");
+            if (username) {
+                alert(`Welcome, ${username}! You are now signed in.`);
+                enableChat();
+            } else {
+                alert('Sign-in canceled. Please sign in to participate in the chat.');
+            }
+        }
+
+        function enableChat() {
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('sign-in-btn').disabled = true;
+            signedIn = true;
+        }
 
         function sendMessage() {
+            if (!signedIn) {
+                alert('You need to sign in before sending messages.');
+                return;
+            }
+
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
 
@@ -78,6 +114,11 @@
         }
 
         document.addEventListener('keydown', function (event) {
+            if (!signedIn) {
+                alert('You need to sign in before using the chat.');
+                return;
+            }
+
             if (event.key === 'ArrowLeft') {
                 currentIndex = Math.max(0, currentIndex - 20);
                 displayChat();
