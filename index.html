@@ -64,12 +64,30 @@
         let signedIn = false;
         let username = '';
 
+        // Load chat history from local storage
+        if (localStorage.getItem('chatHistory')) {
+            chatHistory = JSON.parse(localStorage.getItem('chatHistory'));
+            currentIndex = chatHistory.length;
+            displayChat();
+        }
+
+        // Load signed-in status and username from local storage
+        if (localStorage.getItem('signedIn')) {
+            signedIn = JSON.parse(localStorage.getItem('signedIn'));
+        }
+
+        if (localStorage.getItem('username')) {
+            username = localStorage.getItem('username');
+            displayUsername();
+        }
+
         function signIn() {
             username = prompt("Please enter your username:");
             if (username) {
                 alert(`Welcome, ${username}! You are now signed in.`);
                 enableChat();
                 displayUsername();
+                saveToLocalStorage();
             } else {
                 alert('Sign-in canceled. Please sign in to participate in the chat.');
             }
@@ -96,6 +114,7 @@
                 chatHistory.push(formattedMessage);
                 currentIndex = chatHistory.length;
                 displayChat();
+                saveToLocalStorage();
                 messageInput.value = '';
             }
         }
@@ -119,6 +138,12 @@
         function displayUsername() {
             const usernameDisplay = document.getElementById('username-display');
             usernameDisplay.textContent = `Signed in as: ${username}`;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            localStorage.setItem('signedIn', JSON.stringify(signedIn));
+            localStorage.setItem('username', username);
         }
 
         document.addEventListener('keydown', function (event) {
